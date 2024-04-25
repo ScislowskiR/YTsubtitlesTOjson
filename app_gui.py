@@ -4,20 +4,17 @@ import tkinter as tk
 from download_subtitles import *
 
 class VerticalScrolledFrame:
-    def __init__(self, master=None, **kwargs):
-        width = kwargs.pop('width', None)
-        height = kwargs.pop('height', None)
-        bg = kwargs.pop('bg', kwargs.pop('background', None))
-        self.outer = tk.Frame(master, **kwargs)
+    def __init__(self, master=None, width=100):
+        self.outer = tk.Frame(master, background='pink')
 
-        self.canvas = tk.Canvas(self.outer, highlightthickness=0, bg='yellow')
-        # self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.canvas.grid(column=0, row=0, sticky='nsew')
+        self.canvas = tk.Canvas(self.outer, highlightthickness=0, bg='lightyellow')
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # self.canvas.grid(column=0, row=0)
 
 
         self.vsb = tk.Scrollbar(self.outer, orient=tk.VERTICAL)
-        # self.vsb.pack(fill=tk.Y, side=tk.RIGHT)
-        # self.vsb.grid(column=1, row=0, sticky='nsew')
+        self.vsb.pack(fill=tk.Y, side=tk.RIGHT)
+        # self.vsb.grid(column=1, row=0, sticky='ns')
 
         self.canvas['yscrollcommand'] = self.vsb.set
         self.canvas.bind("<Enter>", self._mouse_binding)
@@ -25,36 +22,79 @@ class VerticalScrolledFrame:
         self.vsb['command'] = self.canvas.yview
 
 
-        self.frame1 = tk.Frame(self.canvas, bg='green')
+        self.frame1 = tk.Frame(self.canvas, bg='white')
         self.canvas.create_window(10, 10, window=self.frame1, anchor='nw')
         self.frame1.bind("<Configure>", self._on_frame_configure)
         # self.frame1.grid(column=0, row=0)
         # self.frame1.grid_rowconfigure(0, weight=1)
 
+        self.frame2 = tk.Frame(self.canvas, bg='lightblue')
+        self.canvas.create_window(60, 10, window=self.frame2, anchor='nw', width=width)
+        self.frame2.bind("<Configure>", self._on_frame_configure)
+        # self.frame2.grid(column=1, row=0)
+        # self.frame2.grid_rowconfigure(0, weight=1)
+
+        self.frame3 = tk.Frame(self.canvas, bg='pink')
+        self.canvas.create_window(100+width, 10, window=self.frame3, anchor='nw', width=width)
+        self.frame3.bind("<Configure>", self._on_frame_configure)
+        # self.frame3.grid(column=2, row=0)
+        # self.frame3.grid_rowconfigure(0, weight=1)
+
         self.outer_attr = set(dir(tk.Widget))
+
 
     def slave_time_labels(self, json_file):
         with open(json_file, 'r', encoding='utf-8') as j:
             data = json.loads(j.read())
         # data = json.loads(json_file)
         slave_time_labels_list = []
-        number = 0
+        row = 0
         for line in data:
-            print(line)
+            # print(line)
+            start=float(line['start'])/60
+            start = '{0:02.0f}:{1:02.0f}'.format(*divmod(start * 60, 60))
+            # print(start)
+            slave_time_labels_list.append(tk.Label(master=self.frame1, text=str(start)))
+            # print(slave_time_labels_list[row])
+            slave_time_labels_list[row].grid(column=0, row=row)
+            row+=1
+
+
+    def slave_buttonlines(self, json_file):
+        with open(json_file, 'r', encoding='utf-8') as j:
+            data = json.loads(j.read())
+        self.frames4buttons2 = []
+        self.buttons2 = []
+        self.frames4buttons3 = []
+        self.buttons3 = []
+        row = 0
+        for line in data:
+            self.frames4buttons2.append(tk.Frame(master=self.frame2))
+            self.frames4buttons2[row].grid(column=0, row=row)
+            self.frames4buttons3.append(tk.Frame(master=self.frame3))
+            self.frames4buttons3[row].grid(column=0, row=row)
+            # print(self.frames4buttons2[row])
+            line_text = line['text']
+            buttons_in_line2 = []
+            buttons_in_line3 = []
             start=float(line['start'])/60
             start = '{0:02.0f}:{1:02.0f}'.format(*divmod(start * 60, 60))
             print(start)
-            slave_time_labels_list.append(tk.Label(master=self.frame1, text=str(start)))
-            print(slave_time_labels_list[number])
-            slave_time_labels_list[number].grid(column=0, row=number)
-            number+=1
+            for i, (k, v) in enumerate(line_text.items()):
+                # print(i, k, v)
+                # print(v[2])
+                buttons_in_line2.append(ChangeValue(master=self.frames4buttons2[v[1]], text=k))
+                buttons_in_line2[v[2]].grid(row=0, column=v[2])
 
 
-    def slave_buttons(self, json_file):
-        pass
+                if v[0]==1:
+                    pass
+            self.buttons2.append(buttons_in_line2)
+            row+=1
+
 
     def __getattr__(self, item):
-        return getattr(self.outer, item) if item in self.outer_attr else getattr(self.inner1, item)
+        return getattr(self.outer, item) if item in self.outer_attr else getattr(self.frame1, item)
 
     def _on_frame_configure(self, event=None):
         x1, y1, x2, y2 = self.canvas.bbox("all")
@@ -81,47 +121,30 @@ class VerticalScrolledFrame:
         return str(self.outer)
 
 
-class EntryWithPlaceholder(tk.Entry):
-    def __init__(self, master, placeholder="PLACEHOLDER", color='grey', variabletext=None):
-        super().__init__(master, textvariable=variabletext)
-        self.variabletext = variabletext
-        self.placeholder = placeholder
-        self.placeholder_color = color
-        self.default_fg_color = self['fg']
-        self.bind("<FocusIn>", self.foc_in)
-        self.bind("<FocusOut>", self.foc_out)
-        self.put_placeholder()
+class KamikazeButton(tk.Button):
+    def __init__(self, master, text):
+        super().__init__(master, text=text, bg="green", command=self.functions)
 
-    def put_placeholder(self):
-        self.insert(0, self.placeholder)
-        self['fg'] = self.placeholder_color
-
-    def foc_in(self, *args):
-        if self['fg'] == self.placeholder_color:
-            self.delete('0', 'end')
-            self['fg'] = self.default_fg_color
-
-    def foc_out(self, *args):
-        if not self.get():
-            self.put_placeholder()
+    def functions(self, function):
+        pass
 
 
 class ChangeValue(tk.Button):
-    def __init__(self, master):
-        super().__init__(master, text="fill", bg="green", command=self.clicked)
+    def __init__(self, master, text):
+        super().__init__(master, text=text, bg="green", command=self.clicked)
 
     def clicked(self):
-        if self['text'] == "fill":
-            self.configure(text="unfill", bg="red")
+        if self['bg'] == "green":
+            self.configure(bg="red")
             return -1
         else:
-            self.configure(text="fill", bg="green")
+            self.configure(bg="green")
             return 1
 
     def __int__(self):
-        if self['text'] == "unfill":
+        if self['bg'] == "green":
             return -1
-        if self['text'] == "fill":
+        if self['text'] == "red":
             return 1
 
 
@@ -196,11 +219,19 @@ class MainWindow:
         self.master.bind('f', lambda e: self.category_settings.event_generate('<<Invoke>>'))
 
     def scrolled_frame(self, json_file=None):
-        self.scrollable = VerticalScrolledFrame(self.master, borderwidth=2,
-                                               relief=tk.SUNKEN, background="#2ff584")
-        self.scrollable.grid(column=0, row=1, sticky='NSEW')
+        longest_line = 100
+        if json_file is not None:
+            with open(json_file, 'r', encoding='utf-8') as j:
+                data = json.loads(j.read())
+            letters_in_line = [sum(len(key) for key in line['text'].keys()) for line in data]
+            longest_line = max(letters_in_line)
+            longest_line = longest_line*10
+
+        self.scrollable = VerticalScrolledFrame(self.master, width=longest_line)
+        self.scrollable.grid(column=0, row=1, sticky='nsew')
         if json_file is not None:
             self.scrollable.slave_time_labels(json_file=json_file)
+            self.scrollable.slave_buttonlines(json_file=json_file)
 
 
 class Main():
@@ -214,6 +245,13 @@ class Main():
         root.grid_columnconfigure(0, weight=1)
         root.grid_rowconfigure(1, weight=1)
         root.mainloop()
+        """
+        with open(json_file, 'r', encoding='utf-8') as j:
+            data = json.loads(j.read())
+        for line in data:
+            total_length = sum(len(key) for key in line.keys())
+            print(total_length)
+        """
 
 
 if __name__ == "__main__":

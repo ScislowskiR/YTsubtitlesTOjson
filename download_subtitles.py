@@ -20,9 +20,10 @@ class DownloadSubtitles:
         self.srt = YouTubeTranscriptApi.get_transcript(self.video_link, languages=self.languages)
 
     def subtitles_to_txt(self):
-        with open(self.txt_path, 'w+', encoding='utf-8') as f:
-            for line in self.srt:
-                f.write("{}\n".format(line))
+        if os.path.isfile(self.json_path) is False:
+            with open(self.txt_path, 'w+', encoding='utf-8') as f:
+                for line in self.srt:
+                    f.write("{}\n".format(line))
 
     def subtitles_to_json(self):
         if os.path.isfile(self.json_path) is False:
@@ -31,7 +32,6 @@ class DownloadSubtitles:
             self.remake_json(path=self.json_path)
 
     def remake_json(self, path):
-        print(path)
         with open(path, 'r', encoding='utf-8') as j:
             data = json.load(j)
         line_number=0
@@ -39,12 +39,15 @@ class DownloadSubtitles:
             line.pop('duration')
             sentence = collections.defaultdict(list)
             words = line['text'].split()
+            words = list(dict.fromkeys(words))
+            print(words)
             word_number = 0
             for word in words:
                 sentence[word].append(0)
                 sentence[word].append(line_number)
                 sentence[word].append(word_number)
                 word_number+=1
+                print(sentence)
             line_number+=1
             print(sentence)
             line['text']=sentence

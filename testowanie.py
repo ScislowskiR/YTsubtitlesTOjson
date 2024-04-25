@@ -154,32 +154,43 @@ if __name__ == "__main__":
     app = MyApp(root)
     root.mainloop()"""
 
-import tkinter as Tkinter
+import tkinter as tk
 
-main = Tkinter.Tk()
-main.geometry("1500x1000")
-main.title("Momentum")
 
-main.grid_rowconfigure(5, weight=1)
-main.grid_columnconfigure(0, weight=1)
-main.grid_columnconfigure(1, weight=1)
+# mouse wheel scrolling with reduced speed
+def on_mouse_wheel(event):
+    canvas.yview('scroll', int(-1 * event.delta / 120), 'units')
 
-canvas = Tkinter.Canvas(main, width=1000, height=600)
-ol1= Tkinter.Label(main, text="Object A")
-ol2= Tkinter.Label(main,text="Object B")
-ml1 = Tkinter.Label(main, text ="MASS")
-ml2 = Tkinter.Label(main, text ="MASS")
-me1 = Tkinter.Entry(main)
-me2 = Tkinter.Entry(main)
 
-canvas.grid(row=0,column=0, columnspan=2)
-ol1.grid(row=1, column=0, pady=(0,20))
-ol2.grid(row=1, column=1, pady=(0,20))
-ml1.grid(row=2, column=0)
-ml2.grid(row=2, column=1)
-me1.grid(row=3, column=0)
-me2.grid(row=3, column=1)
+root = tk.Tk()
+root.bind('<MouseWheel>', on_mouse_wheel)  # bind mousewheel to root, this only works if you have a single scroll area
+window_width = 400
+window_height = 200
+table_columns = 4
+table_rows = 30
 
-box = canvas.create_rectangle(150,20,850,400, outline="blue", fill="white")
+root.geometry(f'{window_width}x{window_height}')
 
-main.mainloop()
+main_frame = tk.Frame(root)
+main_frame.pack(fill=tk.BOTH, expand=1)  # frame goes to the left
+
+canvas = tk.Canvas(main_frame)
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+
+v_scroll = tk.Scrollbar(main_frame, orient=tk.VERTICAL, command=canvas.yview)
+v_scroll.pack(side=tk.RIGHT, fill=tk.Y)  # scrollbar goes to the right
+
+canvas.configure(yscrollcommand=v_scroll.set)
+canvas.bind(
+    '<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox(tk.ALL))
+)  # adjust scrolling area on resize
+
+inside_frame = tk.Frame(canvas)  # frame where you put your actual content
+canvas.create_window((0, 0), window=inside_frame, anchor=tk.N)  # adding the inside_frame to the canvas
+
+# an example grid with some data
+for y in range(table_rows):
+    for x in range(table_columns):
+        tk.Label(inside_frame, text=f'{y}:{x}', borderwidth=1, relief=tk.SOLID, width=10).grid(column=x, row=y)
+
+root.mainloop()
