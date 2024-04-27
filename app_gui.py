@@ -54,7 +54,7 @@ class VerticalScrolledFrame:
             start=float(line['start'])/60
             start = '{0:02.0f}:{1:02.0f}'.format(*divmod(start * 60, 60))
             # print(start)
-            slave_time_labels_list.append(tk.Label(master=self.frame1, text=str(start)))
+            slave_time_labels_list.append(tk.Button(master=self.frame1, text=str(start), state='disabled'))
             # print(slave_time_labels_list[row])
             slave_time_labels_list[row].grid(column=0, row=row)
             row+=1
@@ -68,28 +68,51 @@ class VerticalScrolledFrame:
         self.frames4buttons3 = []
         self.buttons3 = []
         row = 0
-        for line in data:
+        for _ in data:
+
             self.frames4buttons2.append(tk.Frame(master=self.frame2))
             self.frames4buttons2[row].grid(column=0, row=row)
             self.frames4buttons3.append(tk.Frame(master=self.frame3))
             self.frames4buttons3[row].grid(column=0, row=row)
+            row+=1
+        row = 0
+        for line in data:
+            line_text = line['text']
+            print(line_text)
+            labels_in_line3 = []
+            for i, (k, v) in enumerate(line_text.items()):
+                labels_in_line3.append(tk.Button(master=self.frames4buttons3[v[1]], text='', bg='pink', state='disabled'))
+                labels_in_line3[v[2]].grid(row=0, column=v[2])
+            self.buttons2.append(labels_in_line3)
+            row+=1
+        row = 0
+        for line in data:
             # print(self.frames4buttons2[row])
             line_text = line['text']
             buttons_in_line2 = []
             buttons_in_line3 = []
-            start=float(line['start'])/60
+            start = float(line['start'])/60
             start = '{0:02.0f}:{1:02.0f}'.format(*divmod(start * 60, 60))
             print(start)
+            button3 = 0
             for i, (k, v) in enumerate(line_text.items()):
                 # print(i, k, v)
                 # print(v[2])
-                buttons_in_line2.append(ChangeValue(master=self.frames4buttons2[v[1]], text=k))
+                if v[0]==0:
+                    buttons_in_line2.append(ChangeValue(master=self.frames4buttons2[v[1]],
+                        text=k, bg='green', json_file=json_file, state=0, row=row, column=v[2]))
+                elif v[0]==1:
+                    buttons_in_line2.append(ChangeValue(master=self.frames4buttons2[v[1]],
+                        text=k, bg='red', json_file=json_file, state=0, row=row, column=v[2]))
                 buttons_in_line2[v[2]].grid(row=0, column=v[2])
 
 
                 if v[0]==1:
-                    pass
-            self.buttons2.append(buttons_in_line2)
+                    buttons_in_line3.append(ChangeValue(master=self.frames4buttons3[v[1]],
+                        text=k, bg='red', json_file=json_file, state=0, row=row, column=v[2]))
+                    buttons_in_line3[button3].grid(row=0, column=v[2])
+                    button3+=1
+            self.buttons2[row] = buttons_in_line3
             row+=1
 
 
@@ -121,24 +144,35 @@ class VerticalScrolledFrame:
         return str(self.outer)
 
 
-class KamikazeButton(tk.Button):
-    def __init__(self, master, text):
-        super().__init__(master, text=text, bg="green", command=self.functions)
-
-    def functions(self, function):
-        pass
-
-
 class ChangeValue(tk.Button):
-    def __init__(self, master, text):
-        super().__init__(master, text=text, bg="green", command=self.clicked)
+    def __init__(self, master, text, bg, state:int, row, column, json_file:str):
+        super().__init__(master, text=text, bg=bg, command=self.clicked)
+        self.text = text
+        self.json_file = json_file
+        self.state = state
+        self.row = row
+        self.column = column
 
     def clicked(self):
+        with open(self.json_file, 'r', encoding='utf-8') as j:
+            data = json.load(j)
+            data_row = data[self.row]
+            data_words = data_row['text']
+            data_word = data_words[self.text]
+
+            print(data_word)
+
         if self['bg'] == "green":
             self.configure(bg="red")
+            data_word[0] = 1
+            with open(self.json_file, 'w', encoding='utf-8') as j:
+                json.dump(data, j, ensure_ascii=False)
             return -1
         else:
             self.configure(bg="green")
+            data_word[0] = 0
+            with open(self.json_file, 'w', encoding='utf-8') as j:
+                json.dump(data, j, ensure_ascii=False)
             return 1
 
     def __int__(self):

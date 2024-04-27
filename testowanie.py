@@ -153,44 +153,32 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = MyApp(root)
     root.mainloop()"""
-
 import tkinter as tk
-
-
-# mouse wheel scrolling with reduced speed
-def on_mouse_wheel(event):
-    canvas.yview('scroll', int(-1 * event.delta / 120), 'units')
-
-
 root = tk.Tk()
-root.bind('<MouseWheel>', on_mouse_wheel)  # bind mousewheel to root, this only works if you have a single scroll area
-window_width = 400
-window_height = 200
-table_columns = 4
-table_rows = 30
 
-root.geometry(f'{window_width}x{window_height}')
+# create button
+# assign button text along
+# with background color
+myButton = tk.Button(root,
+                  text="On Hover - Background Change",
+                  bg="yellow")
+myButton.pack()
 
-main_frame = tk.Frame(root)
-main_frame.pack(fill=tk.BOTH, expand=1)  # frame goes to the left
+# call function with background
+# colors as argument
+# function to change properties of button on hover
+def changeOnHover(button, colorOnHover, colorOnLeave):
 
-canvas = tk.Canvas(main_frame)
-canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+	# adjusting background of the widget
+	# background on entering widget
+	button.bind("<Enter>", func=lambda e: button.config(
+		background=colorOnHover))
 
-v_scroll = tk.Scrollbar(main_frame, orient=tk.VERTICAL, command=canvas.yview)
-v_scroll.pack(side=tk.RIGHT, fill=tk.Y)  # scrollbar goes to the right
+	# background color on leving widget
+	button.bind("<Leave>", func=lambda e: button.config(
+		background=colorOnLeave))
 
-canvas.configure(yscrollcommand=v_scroll.set)
-canvas.bind(
-    '<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox(tk.ALL))
-)  # adjust scrolling area on resize
-
-inside_frame = tk.Frame(canvas)  # frame where you put your actual content
-canvas.create_window((0, 0), window=inside_frame, anchor=tk.N)  # adding the inside_frame to the canvas
-
-# an example grid with some data
-for y in range(table_rows):
-    for x in range(table_columns):
-        tk.Label(inside_frame, text=f'{y}:{x}', borderwidth=1, relief=tk.SOLID, width=10).grid(column=x, row=y)
+changeOnHover(myButton, "red", "yellow")
 
 root.mainloop()
+
