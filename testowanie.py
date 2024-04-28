@@ -153,7 +153,7 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = MyApp(root)
     root.mainloop()"""
-import tkinter as tk
+"""import tkinter as tk
 root = tk.Tk()
 
 # create button
@@ -181,4 +181,81 @@ def changeOnHover(button, colorOnHover, colorOnLeave):
 changeOnHover(myButton, "red", "yellow")
 
 root.mainloop()
+"""
+"""from tkinter import *
 
+class ToolTip(object):
+
+    def __init__(self, widget):
+        self.widget = widget
+        self.tipwindow = None
+        self.id = None
+        self.x = self.y = 0
+
+    def showtip(self, text):
+        "Display text in tooltip window"
+        self.text = text
+        if self.tipwindow or not self.text:
+            return
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 57
+        y = y + cy + self.widget.winfo_rooty() + 27
+        self.tipwindow = tw = Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry("+%d+%d" % (x, y))
+        label = Label(tw, text=self.text, justify=LEFT,
+                      background="#ffffe0", relief=SOLID, borderwidth=1,
+                      font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
+
+    def hidetip(self):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
+def CreateToolTip(widget, text):
+    toolTip = ToolTip(widget)
+    def enter(event):
+        toolTip.showtip(text)
+    def leave(event):
+        toolTip.hidetip()
+    widget.bind('<Enter>', enter)
+    widget.bind('<Leave>', leave)
+
+# Create a Tkinter window
+root = Tk()
+
+# Create a Button
+button = Button(root, text="Hover Me")
+
+# Pack the Button
+button.pack()
+
+# Create a tooltip for the Button
+CreateToolTip(button, "This is a tooltip")
+
+# Run the Tkinter event loop
+root.mainloop()
+"""
+import re
+
+
+def get_video_id(url):
+    # Regular expression pattern to match YouTube video URLs
+    pattern = r'(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})'
+
+    # Search for the video ID in the URL using the pattern
+    match = re.search(pattern, url)
+
+    # If a match is found, return the video ID, otherwise return None
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+
+# Example usage:
+url = "https://www.youtube.com/watch?v=wP7s-aiCjRw"
+video_id = get_video_id(url)
+print("Video ID:", video_id)

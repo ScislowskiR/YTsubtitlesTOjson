@@ -4,6 +4,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import json
 import os
 import collections
+from deep_translator import GoogleTranslator
 
 
 class DownloadSubtitles:
@@ -40,17 +41,18 @@ class DownloadSubtitles:
             sentence = collections.defaultdict(list)
             words = line['text'].split()
             words = list(dict.fromkeys(words))
-            print(words)
+            trans_words = []
             word_number = 0
             for word in words:
+                trans_words.append(GoogleTranslator(source='auto', target='pl').translate(word))
                 sentence[word].append(0)
                 sentence[word].append(line_number)
                 sentence[word].append(word_number)
                 word_number+=1
-                print(sentence)
             line_number+=1
             print(sentence)
             line['text']=sentence
+            line['trans']=trans_words
         with open(path, 'w', encoding='utf-8') as j:
             json.dump(data, j, ensure_ascii=False)
 
