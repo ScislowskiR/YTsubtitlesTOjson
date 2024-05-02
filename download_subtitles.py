@@ -13,8 +13,8 @@ class DownloadSubtitles:
         self.video_link = video_link
         self.languages = languages
         self.name = name
-        self.path = r'D:\pythonProject\YTsubtitlesTOlearningWORDS\YTsubtitlesTOjson\folders' +\
-                    '\\' + self.category +\
+        self.path = r'D:\pythonProject\YTsubtitlesTOlearningWORDS\YTsubtitlesTOjson\folders' + \
+                    '\\' + self.category + \
                     '\\' + self.name + '_' + self.video_link
         self.txt_path = self.path + '.txt'
         self.json_path = self.path + '.json'
@@ -35,7 +35,7 @@ class DownloadSubtitles:
     def remake_json(self, path):
         with open(path, 'r', encoding='utf-8') as j:
             data = json.load(j)
-        line_number=0
+        line_number = 0
         for line in data:
             line.pop('duration')
             sentence = collections.defaultdict(list)
@@ -48,15 +48,13 @@ class DownloadSubtitles:
                 sentence[word].append(0)
                 sentence[word].append(line_number)
                 sentence[word].append(word_number)
-                word_number+=1
-            line_number+=1
+                word_number += 1
+            line_number += 1
             print(sentence)
-            line['text']=sentence
-            line['trans']=trans_words
+            line['text'] = sentence
+            line['trans'] = trans_words
         with open(path, 'w', encoding='utf-8') as j:
             json.dump(data, j, ensure_ascii=False)
-
-
 
 
 if __name__ == '__main__':

@@ -101,14 +101,14 @@ class VerticalScrolledFrame:
                                          text=k, bg='green', json_file=json_file, state=0, row=row, column=v[2])
                     trans_line = data[v[1]]['trans']
                     trans_word = trans_line[v[2]]
-                    CreateToolTip(button, text=trans_word)
+                    create_tool_tip(button, text=trans_word)
                     buttons_in_line2.append(button)
                 elif v[0] == 1:
                     button = ChangeValue(master=self.frames4buttons2[v[1]],
                                          text=k, bg='red', json_file=json_file, state=0, row=row, column=v[2])
                     trans_line = data[1]['trans']
                     trans_word = trans_line[2]
-                    CreateToolTip(button, text=trans_word)
+                    create_tool_tip(button, text=trans_word)
                     buttons_in_line2.append(button)
                 buttons_in_line2[v[2]].grid(row=0, column=v[2])
 
@@ -124,7 +124,7 @@ class VerticalScrolledFrame:
     def __getattr__(self, item):
         return getattr(self.outer, item) if item in self.outer_attr else getattr(self.frame1, item)
 
-    def _on_frame_configure(self, event=None):
+    def _on_frame_configure(self):
         x1, y1, x2, y2 = self.canvas.bbox("all")
         height = self.canvas.winfo_height()
         self.canvas.config(scrollregion=(0, 0, x2, max(y2, height)))
@@ -135,12 +135,12 @@ class VerticalScrolledFrame:
         elif event.num == 5 or event.delta < 0:
             self.canvas.yview_scroll(1, "units")
 
-    def _mouse_binding(self, event=None):
+    def _mouse_binding(self):
         self.canvas.bind_all("<4>", self._on_mousewheel)
         self.canvas.bind_all("<5>", self._on_mousewheel)
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
-    def _mouse_unbinding(self, event=None):
+    def _mouse_unbinding(self):
         self.canvas.unbind_all("<4>")
         self.canvas.unbind_all("<5>")
         self.canvas.unbind_all("<MouseWheel>")
@@ -196,7 +196,7 @@ class ToolTip(object):
         self.x = self.y = 0
 
     def showtip(self, text):
-        "Display text in tooltip window"
+        """Display text in tooltip window"""
         self.text = text
         if self.tipwindow or not self.text:
             return
@@ -218,20 +218,20 @@ class ToolTip(object):
             tw.destroy()
 
 
-def CreateToolTip(widget, text):
-    toolTip = ToolTip(widget)
+def create_tool_tip(widget, text):
+    tooltip = ToolTip(widget)
 
-    def enter(event):
-        toolTip.showtip(text)
+    def enter():
+        tooltip.showtip(text)
 
-    def leave(event):
-        toolTip.hidetip()
+    def leave():
+        tooltip.hidetip()
 
     widget.bind('<Enter>', enter)
     widget.bind('<Leave>', leave)
 
 
-class ButtonsFunctions():
+class ButtonsFunctions:
 
     def new_folder(self):
         newfolder = simpledialog.askstring(title="Create folder", prompt="Folder name:")
@@ -261,6 +261,7 @@ class ButtonsFunctions():
         video_id = get_video_id(video_link)
 
         name = simpledialog.askstring(title="File name", prompt="Name")
+
         language = simpledialog.askstring(title="Subtitles language", prompt="Language")
         language = [language]
         siema = DownloadSubtitles(category=folder, video_link=video_id, languages=language, name=name)
@@ -307,7 +308,7 @@ class MainWindow:
                 text_no_ext = os.path.splitext(text)[0]
                 self.edit_subcategory_settings.add_command(label=text_no_ext,
                                                            command=lambda folder=folder, text=text: self.scrolled_frame(
-                                                               json_file=self.path_folders + '\\' + folder + '\\' + text))
+                                                            json_file=self.path_folders + '\\' + folder + '\\' + text))
             self.edit_subcategory_settings.add_command(label='New Text', background='green',
                                                        command=lambda folder=folder: self.new_json_exec(folder=folder))
 
@@ -332,27 +333,3 @@ class MainWindow:
         if json_file is not None:
             self.scrollable.slave_time_labels(json_file=json_file)
             self.scrollable.slave_buttonlines(json_file=json_file)
-
-
-class Main():
-    def __init__(self):
-        root = tk.Tk()
-        root.title("WordAPP of YT Videos")
-        root.configure(background="pink")
-        root.geometry('1350x800+150+0')
-        scrollable = MainWindow
-        scrollable(root)
-        root.grid_columnconfigure(0, weight=1)
-        root.grid_rowconfigure(1, weight=1)
-        root.mainloop()
-        """
-        with open(json_file, 'r', encoding='utf-8') as j:
-            data = json.loads(j.read())
-        for line in data:
-            total_length = sum(len(key) for key in line.keys())
-            print(total_length)
-        """
-
-
-if __name__ == "__main__":
-    Main()
