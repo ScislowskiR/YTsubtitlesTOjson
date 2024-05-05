@@ -124,7 +124,7 @@ class VerticalScrolledFrame:
     def __getattr__(self, item):
         return getattr(self.outer, item) if item in self.outer_attr else getattr(self.frame1, item)
 
-    def _on_frame_configure(self):
+    def _on_frame_configure(self, event=None):
         x1, y1, x2, y2 = self.canvas.bbox("all")
         height = self.canvas.winfo_height()
         self.canvas.config(scrollregion=(0, 0, x2, max(y2, height)))
@@ -135,12 +135,12 @@ class VerticalScrolledFrame:
         elif event.num == 5 or event.delta < 0:
             self.canvas.yview_scroll(1, "units")
 
-    def _mouse_binding(self):
+    def _mouse_binding(self, event=None):
         self.canvas.bind_all("<4>", self._on_mousewheel)
         self.canvas.bind_all("<5>", self._on_mousewheel)
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
-    def _mouse_unbinding(self):
+    def _mouse_unbinding(self, event=None):
         self.canvas.unbind_all("<4>")
         self.canvas.unbind_all("<5>")
         self.canvas.unbind_all("<MouseWheel>")
@@ -221,17 +221,17 @@ class ToolTip(object):
 def create_tool_tip(widget, text):
     tooltip = ToolTip(widget)
 
-    def enter():
+    def enter(event):
         tooltip.showtip(text)
 
-    def leave():
+    def leave(event):
         tooltip.hidetip()
 
     widget.bind('<Enter>', enter)
     widget.bind('<Leave>', leave)
 
 
-class ButtonsFunctions:
+class ButtonsFunctions():
 
     def new_folder(self):
         newfolder = simpledialog.askstring(title="Create folder", prompt="Folder name:")
@@ -333,3 +333,4 @@ class MainWindow:
         if json_file is not None:
             self.scrollable.slave_time_labels(json_file=json_file)
             self.scrollable.slave_buttonlines(json_file=json_file)
+
